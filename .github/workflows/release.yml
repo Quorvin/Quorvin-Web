@@ -1,0 +1,34 @@
+name: Release
+
+on:
+  push:
+    branches: [dev]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed to read full commit history
+
+      - name: Auto tag and release
+        uses: mathieudutour/github-tag-action@v6.2
+        id: tag
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch          # if no feat/fix prefix → bump patch
+          release_branches: dev
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag.outputs.new_tag }}
+          name: ${{ steps.tag.outputs.new_tag }}
+          body: ${{ steps.tag.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
