@@ -5,8 +5,18 @@ import Logo from './Logo';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [openedOnPath, setOpenedOnPath] = useState('');
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
+    const pathname = location.pathname;
+
+    // Derive: if pathname changed since menu was opened, treat it as closed
+    const menuIsOpen = isOpen && openedOnPath === pathname;
+
+    const toggleMenu = () => {
+        setIsOpen(!menuIsOpen);
+        setOpenedOnPath(pathname);
+    };
 
     const isHome = location.pathname === '/';
     const showLight = isHome && !scrolled;
@@ -16,8 +26,6 @@ const Navbar = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
-
-    useEffect(() => setIsOpen(false), [location]);
 
     const navLinks = [
         { name: 'Services', path: '/services' },
@@ -58,7 +66,7 @@ const Navbar = () => {
 
                 {/* Mobile hamburger */}
                 <button
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={toggleMenu}
                     className="nav-mobile-btn"
                     style={{
                         display: 'none', background: 'none', border: 'none', cursor: 'pointer',
@@ -66,12 +74,12 @@ const Navbar = () => {
                     }}
                     aria-label="Toggle menu"
                 >
-                    {isOpen ? <X size={24} /> : <Menu size={24} />}
+                    {menuIsOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>
 
             {/* Mobile menu */}
-            {isOpen && (
+            {menuIsOpen && (
                 <div className="nav-mobile-menu" style={{
                     background: 'rgba(15, 27, 61, 0.98)', backdropFilter: 'blur(12px)',
                     padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem',
