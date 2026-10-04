@@ -1,0 +1,21 @@
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin-top: 24px;
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  color: var(--text-soft);
+}
+
+.article-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: var(--measure);
+}
+
+.article-body h2 {
+  margin-top: 16px;
+  font-size: var(--fs-lg);
+}
