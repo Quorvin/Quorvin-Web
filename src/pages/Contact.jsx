@@ -1,81 +1,161 @@
-import React, { useState } from 'react';
-import { Mail, MapPin } from 'lucide-react';
+import { useState } from 'react'
+import SEO from '../components/SEO'
+import Button from '../components/Button'
+import { SITE, whatsappLink } from '../config/site'
+import '../styles/contact.css'
 
-const Contact = () => {
-    const [submitted, setSubmitted] = useState(false);
+// Optional: set VITE_CONTACT_ENDPOINT in .env (for example a Formspree URL)
+// and the form posts there. Without it, the form opens WhatsApp with the
+// message already written, so it still works with no backend.
+const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT || ''
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const res = await fetch('https://formspree.io/f/mdalwnvb', {
-            method: 'POST',
-            body: new FormData(form),
-            headers: { Accept: 'application/json' }
-        });
-        if (res.ok) { setSubmitted(true); form.reset(); }
-    };
+const EMPTY = { name: '', email: '', company: '', message: '' }
 
-    return (
-        <div className="page-transition" style={{ paddingTop: '80px' }}>
-            <div className="container" style={{ padding: '4rem 2rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '4rem', alignItems: 'start' }}>
+export default function Contact() {
+  const [form, setForm] = useState(EMPTY)
+  const [status, setStatus] = useState('idle') // idle | sending | sent | whatsapp | error
 
-                    <div>
-                        <h1 className="fade-in-up" style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '1.5rem', color: 'var(--primary)' }}>Get in Touch</h1>
-                        <p style={{ fontSize: '1.2rem', color: '#64748b', marginBottom: '3rem' }}>
-                            Have a question or want to collaborate? Reach out to us.
-                        </p>
+  const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <div style={{ background: 'rgba(15, 27, 61, 0.05)', padding: '1rem', borderRadius: '50%', color: 'var(--primary)' }}><MapPin /></div>
-                                <div>
-                                    <h3 style={{ fontWeight: '700' }}>Address</h3>
-                                    <p style={{ color: '#64748b' }}>Bojongsoang, Bandung Regency,<br />West Java, Indonesia 40287</p>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <div style={{ background: 'rgba(15, 27, 61, 0.05)', padding: '1rem', borderRadius: '50%', color: 'var(--primary)' }}><Mail /></div>
-                                <div>
-                                    <h3 style={{ fontWeight: '700' }}>Email Us</h3>
-                                    <p style={{ color: '#64748b' }}>info@quorvin.id</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  const onSubmit = async (e) => {
+    e.preventDefault()
 
-                    <div style={{ background: 'white', padding: '3rem', borderRadius: '2rem', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}>
-                        {submitted ? (
-                            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
-                                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.5rem' }}>Message Sent!</h3>
-                                <p style={{ color: '#64748b' }}>We'll get back to you soon.</p>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#475569' }}>Name</label>
-                                    <input name="name" type="text" required placeholder="Your Name" style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', outline: 'none' }} />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#475569' }}>Email</label>
-                                    <input name="email" type="email" required placeholder="your@email.com" style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', outline: 'none' }} />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#475569' }}>Message</label>
-                                    <textarea name="message" rows="4" required placeholder="How can we help?" style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', outline: 'none', fontFamily: 'inherit' }}></textarea>
-                                </div>
-                                <button type="submit" className="btn-primary" style={{ width: '100%', fontSize: '1.1rem', marginTop: '1rem' }}>
-                                    Send Message
-                                </button>
-                            </form>
-                        )}
-                    </div>
+    if (!CONTACT_ENDPOINT) {
+      const text = [
+        `Hi Quorvin, I'm ${form.name}${form.company ? ` from ${form.company}` : ''}.`,
+        form.message,
+        `Reply to: ${form.email}`,
+      ].join('\n\n')
+      window.open(whatsappLink(text), '_blank', 'noopener')
+      setStatus('whatsapp')
+      return
+    }
 
-                </div>
-            </div>
+    setStatus('sending')
+    try {
+      const res = await fetch(CONTACT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error('Request failed')
+      setStatus('sent')
+      setForm(EMPTY)
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  return (
+    <>
+      <SEO
+        title="Contact"
+        description="Talk to Quorvin about an AI, data or web project."
+        path="/contact"
+      />
+
+      <header className="page-head">
+        <div className="container">
+          <h1 className="page-head__title">Tell us the problem.</h1>
+          <p className="page-head__lede">
+            A few lines about what is not working is enough. We reply with questions.
+          </p>
         </div>
-    );
-};
+      </header>
 
-export default Contact;
+      <section className="section section--paper">
+        <div className="container contact">
+          <dl className="contact-facts">
+            <div>
+              <dt>Email</dt>
+              <dd>
+                <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+              </dd>
+            </div>
+            <div>
+              <dt>WhatsApp</dt>
+              <dd>
+                <a href={whatsappLink()} target="_blank" rel="noopener noreferrer">
+                  {SITE.whatsappDisplay}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt>Based in</dt>
+              <dd>
+                {SITE.city}, {SITE.country}
+              </dd>
+            </div>
+          </dl>
+
+          <form onSubmit={onSubmit}>
+            <div className="field">
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                autoComplete="name"
+                value={form.name}
+                onChange={onChange}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={onChange}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="company">Company (optional)</label>
+              <input
+                id="company"
+                name="company"
+                autoComplete="organization"
+                value={form.company}
+                onChange={onChange}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="message">What problem do you want to solve?</label>
+              <textarea
+                id="message"
+                name="message"
+                rows={5}
+                value={form.message}
+                onChange={onChange}
+                required
+              />
+            </div>
+
+            <Button type="submit" disabled={status === 'sending'}>
+              {status === 'sending' ? 'Sending' : 'Send message'}
+            </Button>
+
+            <div aria-live="polite">
+              {status === 'sent' && (
+                <p className="form-status form-status--ok">Message sent. We will reply soon.</p>
+              )}
+              {status === 'whatsapp' && (
+                <p className="form-status form-status--ok">
+                  WhatsApp opened with your message. Press send there to finish.
+                </p>
+              )}
+              {status === 'error' && (
+                <p className="form-status form-status--error">
+                  We could not send your message. Email {SITE.email} or chat on WhatsApp instead.
+                </p>
+              )}
+            </div>
+          </form>
+        </div>
+      </section>
+    </>
+  )
+}

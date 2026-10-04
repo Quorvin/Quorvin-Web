@@ -1,0 +1,51 @@
+/*
+  Quorvin design tokens.
+  Idea: a printed operations log. Paper-light surfaces, navy ink, and one
+  highlighter-yellow that marks "this is the answer" - the same way an
+  engineer marks the line that matters. Yellow is used for the answer in
+  the hero demo and for primary buttons, nowhere else.
+*/
+
+:root {
+  /* Surfaces */
+  --mist: #eef2f5;
+  --paper: #ffffff;
+  --navy: #0f2233;
+  --navy-deep: #091826;
+
+  /* Text */
+  --text-soft: #3c4f60;
+  --text-on-navy-soft: #a9b8c6;
+
+  /* Lines */
+  --rule: #c9d3db;
+  --rule-on-navy: #2d4459;
+
+  /* Accents */
+  --highlight: #ffd84d;
+  --highlight-press: #f0c52a;
+  --brick: #b8402c;  /* errors / noisy log levels */
+  --pine: #1b7a57;   /* success */
+
+  /* Type families */
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* Type scale (fluid) */
+  --fs-sm: 0.9375rem;
+  --fs-base: 1.125rem;
+  --fs-md: 1.375rem;
+  --fs-lg: clamp(1.625rem, 1.3rem + 1.1vw, 2.125rem);
+  --fs-xl: clamp(2.125rem, 1.5rem + 2.3vw, 3.25rem);
+  --fs-hero: clamp(2.75rem, 1.6rem + 4.6vw, 5.5rem);
+
+  /* Layout */
+  --wrap: 1160px;
+  --gutter: clamp(20px, 4vw, 40px);
+  --measure: 62ch;
+  --radius: 4px;
+  --header-h: 72px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
